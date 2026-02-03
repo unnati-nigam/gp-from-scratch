@@ -1,6 +1,6 @@
-# Engineering Gaussian Processes for Real-World Time Series
+# Gaussian Processes for Real-World Time Series from scratch
 
-This repository contains a portfolio-grade notebook demonstrating how Gaussian Processes (GPs) can be applied to structured time-series problems with a focus on **practical modeling decisions**, not just theory.
+This repository contains a research-grade notebook demonstrating how Gaussian Processes (GPs) can be applied to structured time-series problems with a focus on **practical modeling decisions**, not just theory.
 
 The project emphasizes kernel design, uncertainty-aware forecasting, numerical stability, and diagnostics — all critical for deploying probabilistic models in real-world systems.
 
