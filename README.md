@@ -1,4 +1,4 @@
-# Gaussian Processes for Real-World Time Series from scratch
+# Engineering Gaussian Processes for Real-World Time Series
 
 A portfolio-grade notebook demonstrating how **Gaussian Processes (GPs)** are applied in realistic modeling scenarios, with emphasis on kernel engineering, numerical stability, hyperparameter optimization, and forecasting under uncertainty.
 
@@ -14,26 +14,22 @@ $$
 f(x) \sim \mathcal{GP}(m(x), k(x,x'))
 $$
 
-Given observations:
+Observations are modeled as:
 
 $$
 y = f(x) + \epsilon, \quad \epsilon \sim \mathcal{N}(0,\sigma_n^2)
 $$
 
-the posterior predictive distribution is Gaussian:
+The posterior predictive mean is:
 
 $$
-f_* \mid X, y, X_* \sim \mathcal{N}(\mu_*, \Sigma_*)
+\mu_* = K(X_*,X)(K(X,X)+\sigma_n^2 I)^{-1}y
 $$
 
-where
+and the predictive covariance is:
 
 $$
-\mu_* = K(X_*,X)\left[K(X,X)+\sigma_n^2 I\right]^{-1}y
-$$
-
-$$
-\Sigma_* = K(X_*,X_*) - K(X_*,X)\left[K(X,X)+\sigma_n^2 I\right]^{-1}K(X,X_*).
+\Sigma_* = K(X_*,X_*) - K(X_*,X)(K(X,X)+\sigma_n^2 I)^{-1}K(X,X_*).
 $$
 
 This notebook focuses on **practical modeling decisions** that determine whether a GP succeeds in applied environments.
@@ -44,20 +40,20 @@ This notebook focuses on **practical modeling decisions** that determine whether
 
 ### Kernel Engineering for Structured Signals
 
-We implement a quasi-periodic kernel:
+We use a quasi-periodic kernel:
 
 $$
 k(x,x') =
 \sigma^2
-\exp\left(-\frac{(x-x')^2}{2\ell^2}\right)
-\exp\left(-\frac{2\sin^2(\pi |x-x'| / p)}{\ell_p^2}\right)
+\exp(-(x-x')^2 / (2\ell^2))
+\exp(-2\sin^2(\pi |x-x'| / p) / \ell_p^2)
 $$
 
-**Interpretation:**
+**Interpretation**
 
 - $\ell$ controls long-term smoothness  
-- $p$ represents the period  
-- $\ell_p$ controls how strictly periodic the function is  
+- $p$ is the period  
+- $\ell_p$ determines how strictly periodic the function is  
 
 ---
 
@@ -68,12 +64,12 @@ Parameters are learned by maximizing the log marginal likelihood:
 $$
 \log p(y|X,\theta)
 =
--\frac{1}{2} y^\top K^{-1} y
+-\frac{1}{2} y^T K^{-1} y
 -\frac{1}{2} \log |K|
 -\frac{n}{2}\log(2\pi)
 $$
 
-Because this objective is **non-convex**, multiple optimizer restarts are essential to avoid poor local optima.
+Because this objective is **non-convex**, multiple optimizer restarts are essential.
 
 ---
 
@@ -86,7 +82,7 @@ $$
 K(X_*,X_*) - K(X_*,X)K^{-1}K(X,X_*)
 $$
 
-Well-calibrated uncertainty is critical for:
+Well-calibrated uncertainty supports:
 
 - safe decision systems  
 - anomaly detection  
@@ -104,22 +100,22 @@ $$
 K \leftarrow K + \epsilon I, \quad \epsilon \in [10^{-8}, 10^{-6}]
 $$
 
-This improves conditioning and ensures reliable Cholesky decomposition.
+This improves conditioning and ensures reliable Cholesky factorization.
 
 ---
 
 ### Model Diagnostics
 
-Residual analysis helps detect modeling failures:
+Residuals:
 
 $$
 r_i = y_i - \hat{f}(x_i)
 $$
 
-Warning signs include:
+Warning signs:
 
 - structured residuals → missing kernel component  
-- heavy tails → incorrect noise assumptions  
+- heavy tails → incorrect noise model  
 - variance drift → heteroscedastic noise  
 
 ---
@@ -132,13 +128,13 @@ $$
 \mathcal{O}(n^3)
 $$
 
-and prediction scales as:
+Prediction scales as:
 
 $$
 \mathcal{O}(n^2)
 $$
 
-This motivates sparse approximations using inducing variables, reducing complexity to:
+Sparse approximations reduce complexity to:
 
 $$
 \mathcal{O}(nm^2), \quad m \ll n
@@ -154,9 +150,6 @@ $$
 - Scikit-learn  
 
 *(Optional extension: GPyTorch for scalable Gaussian Processes.)*
-
----
-
 
 ---
 
@@ -191,10 +184,8 @@ $$
 
 ## Future Extensions
 
-Potential upgrades for deeper applied capability:
-
 - Sparse Variational Gaussian Processes  
-- State-Space Gaussian Processes (Kalman formulation)  
+- State-Space Gaussian Processes  
 - Bayesian Optimization  
 - Multi-output GPs  
 - Deep Kernel Learning  
